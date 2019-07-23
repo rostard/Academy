@@ -19,9 +19,14 @@ void *FS::GetFreeBlock() {
 FS::Inode* FS::GetAddressByPath(const FS::Path &i_full_path) {
     if(i_full_path[0] != '/')
         return nullptr;
-    Inode
+    Inode* cur_inode = GetRoot();
     unsigned long prev_slash = 1;
-    i_full_path.substr(prev_slash, i_full_path.find_first_of('\\', prev_slash))
+    unsigned long next_slash = i_full_path.find_first_of('\\', prev_slash);
+    while(next_slash != -1)
+    {
+        auto folder_name = i_full_path.substr(prev_slash, next_slash);
+    }
+    return cur_inode;
 }
 
 FS::Inode *FS::GetRoot() {
@@ -37,7 +42,7 @@ FS::FolderHandle FS::OpenFolder(const FS::Path &i_full_path) {
 }
 
 std::vector<FS::ItemHandle *> FS::FolderHandle::GetSubItems() {
-    std::vector<FS::ItemHandle *> ret(*(size_t*)mp_some_handle->m_data_block[0]);
+    std::vector<FS::ItemHandle *> ret(*((size_t*)mp_some_handle->m_data_block[0]));
     for(int i = 0; i < ret.size(); ++i){
         Inode* inode = (Inode*)((size_t*)mp_some_handle->m_data_block[0] +1) + i;
         if(inode->m_attr.m_isFile)

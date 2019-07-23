@@ -111,7 +111,15 @@ public:
         root_inode->m_attr.m_size = sizeof(size_t);
 
         char* root_folder = (char*)root_inode->m_data_block[0];
-        *(size_t*)root_folder = 0;
+        *(size_t*)root_folder = 2;
+        auto* items = (ItemEntry*)((size_t*)root_folder + 1);
+
+
+        items[0].file_inode = root_inode;
+        strcpy(items[0].name, ".");
+
+        items[1].file_inode = root_inode;
+        strcpy(items[1].name, "..");
     }
 
     bool CreateEmptyFolder(const Path& i_full_path);
@@ -131,6 +139,11 @@ public:
     FileHandle OpenFile(const Path& i_full_path);
 
 private:
+    struct ItemEntry{
+        Inode* file_inode;
+        char name[32];
+    };
+
     void* GetFreeBlock();
     Inode* GetAddressByPath(const FS::Path &i_full_path);
     Inode* GetRoot();

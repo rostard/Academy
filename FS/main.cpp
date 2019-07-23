@@ -9,8 +9,8 @@ int main() {
     auto fd = fs.OpenFolder("/");
     for(auto& i: fd.GetSubItems())
     {
-        std::cout<<i->GetFullPath()<<'\n';
+//        std::cout<<i->GetFullPath()<<'\n';
     }
-    fs.CreateEmptyFile("/test.txt");
+//    fs.CreateEmptyFile("/test.txt");
     return 0;
 }
