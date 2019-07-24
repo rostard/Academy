@@ -33,6 +33,31 @@ int get_index_by_type()
                                            get_index_by_type<N + 1, T, Next, Args...>();
 }
 
+
+
+template <int N, typename T>
+void delete_type_by_index(void* data, int index)
+{
+    ((T*)data)->~T();
+    //return N * std::is_same<T, U>::value + (1 - std::is_same<T, U>::value) * -1;
+
+}
+
+
+template <int N, typename T, typename Next, typename... Args>
+void delete_type_by_index(void* data , int index)
+{
+    if(N == index)
+    {
+        ((T*)data)->~T();
+        return;
+    }
+    else delete_type_by_index<N+1, Next, Args...>(data , index);
+    //return N * std::is_same<T, U>::value + (1 - std::is_same<T, U>::value) *
+      //                                     get_index_by_type<N + 1, T, Next, Args...>();
+}
+
+
 template <typename ...Args>
 class Variant
 {
@@ -43,8 +68,42 @@ public:
     template <typename T>
     Variant(const T& other)
     {
-        *(T*)data = other;
+        if(index != -1)delete_type_by_index<0, Args...>(&data, index);
+        new (&data) T(other);
         index = get_index_by_type<0, T, Args...>();
+    }
+
+    template <typename T>
+    Variant(T&& other)
+    {
+        if(index != -1)delete_type_by_index<0, Args...>(&data, index);
+        new (&data) T(std::forward<T>(other));
+        index = get_index_by_type<0, T, Args...>();
+    }
+
+    template <typename T>
+    Variant& operator=(const T& other)
+    {
+        if(index != -1)delete_type_by_index<0, Args...>(&data, index);
+        new (&data) T(other);
+        index = get_index_by_type<0, T, Args...>();
+        return *this;
+    }
+
+
+    template <typename T>
+    Variant& operator=(T&& other)
+    {
+        if(index != -1)delete_type_by_index<0, Args...>(&data, index);
+        new (&data) T(std::forward<T>(other));
+        index = get_index_by_type<0, T, Args...>();
+        return *this;
+    }
+
+
+    ~Variant()
+    {
+        if(index != -1)delete_type_by_index<0, Args...>(&data, index);
     }
 
     template <int N>
@@ -69,13 +128,26 @@ private:
     char data[max_sz<Args...>::val];
 };
 
-int main() {
-    Variant<char, int, double > v;
-    v = 10;
-    std::cout << v.get<int>() << std::endl;
-    v = 1.;
-    std::cout << v.get<double>() << std::endl;
+struct X{
+    ~X() {
+        std::cout<<"Destruct\n";
+    }
+    X(X&&) = default;
+    X&operator=(X&&) = default;
+    int i;
+};
 
+
+int main() {
+    {
+        Variant<char, int, double, X> v;
+        v = 10;
+        std::cout << v.get<int>() << std::endl;
+        v = 1.;
+        std::cout << v.get<double>() << std::endl;
+        v = X{3};
+        std::cout << v.get<X>().i << std::endl;
+    }
     return 0;
 
 }
