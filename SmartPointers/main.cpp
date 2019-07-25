@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include "SharedPtr.h"
 #include "WeakPtr.h"

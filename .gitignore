@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/SmartPointers/Debug
+/SmartPointers/.vs/SmartPointers/v15
+/SmartPointers/SmartPointers.vcxproj.user
+/SmartPointers/SmartPointers.vcxproj.filters
+/SmartPointers/SmartPointers.vcxproj
+/SmartPointers/SmartPointers.sln

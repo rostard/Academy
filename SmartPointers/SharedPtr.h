@@ -15,7 +15,7 @@ class SharedPtr : public SharedBase<T>{
 public:
 
     SharedPtr() : SharedBase<T>(nullptr, nullptr) {}
-    SharedPtr(T* i_data) : SharedBase<T>(i_data, new FragmentedBlock(i_data)) {  }
+    SharedPtr(T* i_data) : SharedBase<T>(i_data, new FragmentedBlock<T>(i_data)) {  }
     SharedPtr(const SharedPtr<T>& rhs) : SharedBase<T>(rhs)
     {
         ++this->mp_control_block->m_shared_counter;
@@ -93,7 +93,7 @@ template <typename U, typename ... Args>
 SharedPtr<U> make_shared(Args&&... args)
 {
     auto block = new ContiniousBlock<U>(std::forward<Args>(args)...);
-    return SharedPtr(block);
+    return SharedPtr<U>(block);
 }
 
 template<typename T>

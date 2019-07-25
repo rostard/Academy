@@ -42,12 +42,12 @@ public:
 
     SharedPtr<T> lock()
     {
-        return expired() ? SharedPtr<T>() : SharedPtr(*this);
+        return expired() ? SharedPtr<T>() : SharedPtr<T>(*this);
     }
 
     const SharedPtr<T> lock() const
     {
-        return expired() ? SharedPtr<T>() : SharedPtr(*this);
+        return expired() ? SharedPtr<T>() : SharedPtr<T>(*this);
     }
 
     bool expired() const
