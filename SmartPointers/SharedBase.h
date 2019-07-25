@@ -2,8 +2,7 @@
 // Created by rostard on 24.07.19.
 //
 
-#ifndef SMARTPOINTERS_SHAREDBASE_H
-#define SMARTPOINTERS_SHAREDBASE_H
+#pragma once
 
 #include "Block.h"
 
@@ -16,6 +15,3 @@ protected:
     Block* mp_control_block;
 
 };
-
-
-#endif //SMARTPOINTERS_SHAREDBASE_H

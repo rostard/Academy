@@ -2,9 +2,7 @@
 // Created by rostard on 24.07.19.
 //
 
-#ifndef SMARTPOINTERS_WEAKPTR_H
-#define SMARTPOINTERS_WEAKPTR_H
-
+#pragma once
 
 #include "SharedPtr.h"
 template <typename T>
@@ -61,5 +59,3 @@ public:
     }
 };
 
-
-#endif //SMARTPOINTERS_WEAKPTR_H

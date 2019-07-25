@@ -2,8 +2,7 @@
 // Created by rostard on 24.07.19.
 //
 
-#ifndef SMARTPOINTERS_BLOCK_H
-#define SMARTPOINTERS_BLOCK_H
+#pragma once
 
 
 #include <cstdint>
@@ -64,5 +63,3 @@ public:
     }
     T m_data;
 };
-
-#endif //SMARTPOINTERS_BLOCK_H

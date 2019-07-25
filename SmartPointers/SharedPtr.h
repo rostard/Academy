@@ -2,8 +2,7 @@
 // Created by rostard on 24.07.19.
 //
 
-#ifndef SMARTPOINTERS_SHAREDPTR_H
-#define SMARTPOINTERS_SHAREDPTR_H
+#pragma once
 
 #include "SharedBase.h"
 
@@ -18,7 +17,8 @@ public:
     SharedPtr(T* i_data) : SharedBase<T>(i_data, new FragmentedBlock<T>(i_data)) {  }
     SharedPtr(const SharedPtr<T>& rhs) : SharedBase<T>(rhs)
     {
-        ++this->mp_control_block->m_shared_counter;
+		if(this->mp_control_block)
+			++this->mp_control_block->m_shared_counter;
     }
 
     SharedPtr(const WeakPtr<T>& rhs) : SharedBase<T>(rhs)
@@ -53,18 +53,18 @@ public:
     SharedPtr(SharedPtr&& rhs) : SharedBase<T>(rhs.mp_data, rhs.mp_control_block)
     {
         rhs.mp_control_block = nullptr;
-        rhs.mp_control_block = nullptr;
+        rhs.mp_data = nullptr;
     }
 
 
-    T& get()
+    T* get()
     {
-        return *this->mp_data;
+        return this->mp_data;
     }
 
-    const T& get() const
+    const T* get() const
     {
-        return *this->mp_data;
+        return this->mp_data;
     }
 
     T&operator*()
@@ -79,7 +79,7 @@ public:
 
     explicit operator bool()
     {
-        return &get() != nullptr;
+        return get() != nullptr;
     }
 
 private:
@@ -101,5 +101,3 @@ SharedPtr<T>::~SharedPtr() {
     if(this->mp_control_block)
         this->mp_control_block->DecreeseSharedCounterAndMaybeFree();
 }
-
-#endif //SMARTPOINTERS_SHAREDPTR_H

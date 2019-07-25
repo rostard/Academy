@@ -40,15 +40,18 @@ int main() {
         auto sharedPtr2 = sharedPtr;
         auto shared = make_shared<Wrapper>("This was made with make_shared");
 
-        std::cout << shared.get() << std::endl;
-        std::cout << sharedPtr2.get() << std::endl;
+        std::cout << *shared.get() << std::endl;
+        std::cout << *sharedPtr2.get() << std::endl;
 
         weakPtr = sharedPtr2;
         SharedPtr<Wrapper> sharedPtr3(weakPtr);
-        std::cout << weakPtr.lock().get() << std::endl;
+        std::cout << *weakPtr.lock().get() << std::endl;
 
         check_weak(weakPtr);
     }
+
+	SharedPtr<int> sp;
+	SharedPtr<int> sp2(sp);
 
     check_weak(weakPtr);
     return 0;
