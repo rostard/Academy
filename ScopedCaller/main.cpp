@@ -7,20 +7,29 @@ struct ScopedCaller{
     template <typename F>
     ScopedCaller(F&& i_fun) : mp_f(std::make_unique<std::function<void()>>(
             [fun = std::forward<F>(i_fun)] () mutable {fun();})) {}
-    ~ScopedCaller() {
+
+    ~ScopedCaller()
+    {
         if(mp_f)(*mp_f)();
     }
 
-    std::unique_ptr<std::function<void()>> Release(){
+    std::unique_ptr<std::function<void()>> Release()
+    {
         return std::move(mp_f);
     }
 
 
     template <typename F>
-    void Reset(F&& i_fun){
+    void Reset(F&& i_fun)
+    {
         auto new_f = std::make_unique<std::function<void()>>(
                 [fun = std::forward<F>(i_fun)] () mutable {fun();});
         mp_f = std::move(new_f);
+    }
+
+    void Reset()
+    {
+        mp_f.reset();
     }
 
 private:
@@ -79,6 +88,7 @@ int main() {
         ScopedCaller sc(Functor{"First"});
         auto f = sc.Release();
         sc.Reset(Functor{"Second"});
+        //sc.Reset();
         //(*f)();
     }
     std::function<void()> function([]{});
