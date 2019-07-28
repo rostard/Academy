@@ -1,39 +1,45 @@
 #include <iostream>
 #include <functional>
-#include <bits/unique_ptr.h>
 
-struct ScopedCaller{
+class ScopedCaller
+{
+public:
+    template<typename F, typename = std::enable_if_t<!std::is_same<ScopedCaller&, F>::value>>
+    ScopedCaller(F&& f)
+            : m_func(std::forward<F>(f))
+    {
+    }
 
-    template <typename F>
-    ScopedCaller(F&& i_fun) : mp_f(std::make_unique<std::function<void()>>(
-            [fun = std::forward<F>(i_fun)] () mutable {fun();})) {}
+    ScopedCaller(const ScopedCaller& rhs) = default;
+    ScopedCaller(ScopedCaller&& rhs) = default;
+    ScopedCaller& operator=(const ScopedCaller& rhs) = default;
+    ScopedCaller& operator=(ScopedCaller&& rhs) = default;
 
     ~ScopedCaller()
     {
-        if(mp_f)(*mp_f)();
+        if(m_func)m_func();
     }
 
-    std::unique_ptr<std::function<void()>> Release()
+
+    std::function<void()> Release()
     {
-        return std::move(mp_f);
+        return std::move(m_func);
     }
-
 
     template <typename F>
-    void Reset(F&& i_fun)
+    void Reset(F&& f)
     {
-        auto new_f = std::make_unique<std::function<void()>>(
-                [fun = std::forward<F>(i_fun)] () mutable {fun();});
-        mp_f = std::move(new_f);
+        auto new_func(std::forward<F>(f));
+        m_func = std::move(new_func);
     }
 
     void Reset()
     {
-        mp_f.reset();
+        m_func = std::function<void()>{};
     }
 
 private:
-    std::unique_ptr<std::function<void()>> mp_f;
+    std::function<void()> m_func;
 };
 
 
@@ -49,7 +55,7 @@ struct Functor
     }
 
     ~Functor(){
-        std::cout<<"Destructor" << msg <<'\n';
+        std::cout<<"Destructor " << msg <<'\n';
     }
 
     Functor(const Functor& rhs){
@@ -86,10 +92,11 @@ struct Functor
 int main() {
     {
         ScopedCaller sc(Functor{"First"});
-        auto f = sc.Release();
-        sc.Reset(Functor{"Second"});
-        //sc.Reset();
-        //(*f)();
+//        ScopedCaller sc2 = sc;
+//        auto f = sc.Release();
+//        sc.Reset(Functor{"Second"});
+//        sc.Reset();
+
     }
     std::function<void()> function([]{});
     return 0;
