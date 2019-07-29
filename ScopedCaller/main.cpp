@@ -10,7 +10,7 @@ public:
     {
     }
 
-    ScopedCaller(const ScopedCaller& rhs) = default;
+    ScopedCaller(const ScopedCaller& rhs) = delete;
     ScopedCaller(ScopedCaller&& rhs) = default;
     ScopedCaller& operator=(const ScopedCaller& rhs) = default;
     ScopedCaller& operator=(ScopedCaller&& rhs) = default;
@@ -30,6 +30,7 @@ public:
     void Reset(F&& f)
     {
         auto new_func(std::forward<F>(f));
+        if(m_func)m_func();
         m_func = std::move(new_func);
     }
 
