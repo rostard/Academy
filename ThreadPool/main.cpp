@@ -31,12 +31,10 @@ public:
 	{
 		using ret_type = decltype(func(args...));
 
-		auto promise = std::make_shared<std::promise<ret_type>>();
-		auto future = promise->get_future();
-
-		auto new_task = [promise, func = std::forward<F>(func), &args...] () mutable {
-            promise->set_value(func(std::forward<Args>(args)...));
-		};
+        std::packaged_task<ret_type()> new_task([func = std::forward<F>(func), &args...] {
+            return func(std::forward<Args>(args)...);
+		});
+        auto future = new_task.get_future();
 
         {
 		std::lock_guard<std::mutex> g(m_task_mutex);
@@ -92,7 +90,7 @@ private:
 	size_t m_num_of_threads;
 	std::vector<std::thread> m_threads;
 
-	std::queue<std::function<void()>> m_tasks;
+	std::queue<std::packaged_task<void()>> m_tasks;
 
 	std::condition_variable m_task_cv;
 
