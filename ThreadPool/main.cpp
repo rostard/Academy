@@ -9,7 +9,7 @@
 class MThreadPool
 {
 public:
-	MThreadPool(size_t i_num_of_threads = std::thread::hardware_concurrency()) : m_num_of_threads(i_num_of_threads), m_num_of_active_threads(0)
+	explicit MThreadPool(size_t i_num_of_threads = std::thread::hardware_concurrency()) : m_num_of_threads(i_num_of_threads), m_num_of_active_threads(0)
 	{
 		if (!m_num_of_threads)
 			m_num_of_threads = 2;
@@ -26,25 +26,44 @@ public:
 	}
 
 
-	template<typename F, typename... Args>
-	auto Do(F&& func, Args&&... args)
-	{
-		using ret_type = decltype(func(args...));
+    template<typename F, typename... Args>
+    auto Do(F&& func, Args&&... args)
+    {
+        using ret_type = decltype(func(args...));
 
         std::packaged_task<ret_type()> new_task([func = std::forward<F>(func), &args...] {
             return func(std::forward<Args>(args)...);
-		});
+        });
         auto future = new_task.get_future();
 
         {
-		std::lock_guard<std::mutex> g(m_task_mutex);
-        m_tasks.emplace(std::move(new_task));
+            std::lock_guard<std::mutex> g(m_task_mutex);
+            m_tasks.emplace(std::move(new_task));
         }
 
         m_task_cv.notify_one();
 
-		return future;
-	}
+        return future;
+    }
+
+    template<typename... Args>
+    void Do(std::function<void(Args...)>&& func, Args&&... args)
+    {
+        using ret_type = decltype(func(args...));
+
+        std::packaged_task<ret_type()> new_task([func = std::forward<std::function<void(Args...)>>(func), &args...] {
+            return func(std::forward<Args>(args)...);
+        });
+
+        {
+            std::lock_guard<std::mutex> g(m_task_mutex);
+            m_tasks.emplace(std::move(new_task));
+        }
+
+        m_task_cv.notify_one();
+
+    }
+
 
 	size_t TaskNumber() const
 	{
@@ -112,20 +131,18 @@ int main()
 		    double sum = 0;
 			for (const auto& i : v)
 				sum += std::sqrt(i + 1000);
-			return sum;
 		};
+
+
+        for (int i = 0; i < tasks; ++i)
+            pool.Do(f, v);
+
+
+        std::this_thread::sleep_for(std::chrono::seconds(5));
 
 
         std::vector<std::future<double>> futures;
         futures.resize(tasks);
-        for (int i = 0; i < tasks; ++i)
-            futures[i] = pool.Do(f, v);
-
-        for(auto& f : futures)
-            f.get();
-
-
-        std::this_thread::sleep_for(std::chrono::seconds(5));
 
         for (int i = 0; i < tasks; ++i)
             futures[i] = pool.Do([] (std::vector<double>& v){
@@ -138,5 +155,7 @@ int main()
         for(auto& f : futures)
             f.get();
 
-	}
+
+
+    }
 }
