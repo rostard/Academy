@@ -19,8 +19,11 @@ public:
 	}
 	~MThreadPool()
 	{
+		
+		m_task_mutex.lock();
 		Done = true;
 		m_task_cv.notify_all();
+		m_task_mutex.unlock();
 		for (auto& p : m_threads)
 			p.join();
 	}
@@ -31,8 +34,8 @@ public:
     {
         using ret_type = decltype(func(args...));
 
-        std::packaged_task<ret_type()> new_task([func = std::forward<F>(func), &args...] {
-            return func(std::forward<Args>(args)...);
+        std::packaged_task<ret_type()> new_task([func = std::forward<F>(func), args...] {
+            return func(std::move(args)...);
         });
         auto future = new_task.get_future();
 
@@ -127,7 +130,7 @@ int main()
 		MThreadPool pool;
 		int tasks = 30;
 		std::vector<double> v(10000000, 0);
-		auto f = [] (std::vector<double>& v){
+		auto f = [] (const std::vector<double>& v){
 		    double sum = 0;
 			for (const auto& i : v)
 				sum += std::sqrt(i + 1000);
@@ -145,7 +148,7 @@ int main()
         futures.resize(tasks);
 
         for (int i = 0; i < tasks; ++i)
-            futures[i] = pool.Do([] (std::vector<double>& v){
+            futures[i] = pool.Do([] (const std::vector<double>& v){
                 double sum = 0;
                 for (const auto& i : v)
                     sum += std::sqrt(i + 1000);
