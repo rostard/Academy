@@ -54,7 +54,7 @@ public:
     {
         using ret_type = decltype(func(args...));
 
-        std::packaged_task<ret_type()> new_task([func = std::forward<std::function<void(Args...)>>(func), &args...] {
+        std::packaged_task<ret_type()> new_task([func = std::forward<std::function<void(Args...)>>(func), args...] {
             return func(std::forward<Args>(args)...);
         });
 
