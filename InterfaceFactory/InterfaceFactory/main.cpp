@@ -1,6 +1,6 @@
-
 #include <iostream>
 #include <type_traits>
+
 
 #include "StaticInterfaceFactory.h"
 #include "DynamicInterfaceFactory.h"
@@ -38,6 +38,14 @@ int main()
 	StaticInterfaceFactory::Instance().Unregister<Base>();
 	std::cout << StaticInterfaceFactory::Instance().IsRegistered<Base>() << std::endl;
 
+	{
+		auto handle = StaticInterfaceFactory::Instance().ScopedRegister<Base, Derived>();
+		std::cout << StaticInterfaceFactory::Instance().IsRegistered<Base>() << std::endl;
+	}
+	std::cout << StaticInterfaceFactory::Instance().IsRegistered<Base>() << std::endl;
+
+
+
 	std::cout << std::endl;
 
 	std::cout << DynamicInterfaceFactory::Instance().IsRegistered<Base>() << std::endl;
@@ -47,6 +55,12 @@ int main()
 	DynamicInterfaceFactory::Instance().Create<Base>()->say();
 	std::cout << DynamicInterfaceFactory::Instance().IsRegistered<Base>() << std::endl;
 	DynamicInterfaceFactory::Instance().Unregister<Base>();
+	std::cout << DynamicInterfaceFactory::Instance().IsRegistered<Base>() << std::endl;
+
+	{
+		auto handle = DynamicInterfaceFactory::Instance().ScopedRegister<Base, Derived>();
+		std::cout << DynamicInterfaceFactory::Instance().IsRegistered<Base>() << std::endl;
+	}
 	std::cout << DynamicInterfaceFactory::Instance().IsRegistered<Base>() << std::endl;
 
 	std::cin.get();

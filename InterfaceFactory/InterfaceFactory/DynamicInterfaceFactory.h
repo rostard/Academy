@@ -6,6 +6,32 @@
 
 class DynamicInterfaceFactory
 {
+	template<typename TInterface>
+	struct Subscription
+	{
+		Subscription() : valid(true) {}
+
+		~Subscription()
+		{
+			if (valid)
+				DynamicInterfaceFactory::Instance().Unregister<TInterface>();
+		}
+
+		Subscription(const Subscription&) = delete;
+		Subscription& operator=(const Subscription&) = delete;
+
+		Subscription(Subscription&& rhs)
+		{
+			rhs.valid = false;
+		}
+
+		Subscription& operator=(Subscription&& rhs)
+		{
+			rhs.valid = false;
+		}
+
+		bool valid;
+	};
 public:
 
 	template<class TInterface>
@@ -20,10 +46,24 @@ public:
 		m_map[std::type_index(typeid(TInterface))] = [] {return new TImplementation(); };
 	}
 
+	template<class TInterface, class TImplementation>
+	inline Subscription<TInterface> ScopedRegister()
+	{
+		m_map[std::type_index(typeid(TInterface))] = [] {return new TImplementation(); };
+		return Subscription<TInterface>{};
+	}
+
 	template<class TInterface>
-	inline void Register(std::function<TInterface*()> i_create_proc)
+	inline void Register(std::function<TInterface* ()> i_create_proc)
 	{
 		m_map[std::type_index(typeid(TInterface))] = i_create_proc;
+	}
+
+	template<class TInterface>
+	inline Subscription<TInterface> ScopedRegister(std::function<TInterface* ()> i_create_proc)
+	{
+		m_map[std::type_index(typeid(TInterface))] = i_create_proc;
+		return Subscription<TInterface>{};
 	}
 
 	template<class TInterface>

@@ -4,6 +4,33 @@
 class StaticInterfaceFactory
 {
 	template<typename TInterface>
+	struct Subscription
+	{
+		Subscription(): valid(true){}
+
+		~Subscription() 
+		{
+			if (valid)
+				StaticInterfaceFactory::Instance().Unregister<TInterface>();
+		}
+
+		Subscription(const Subscription&) = delete;
+		Subscription& operator=(const Subscription&) = delete;
+
+		Subscription(Subscription&& rhs)
+		{
+			rhs.valid = false;
+		}
+
+		Subscription& operator=(Subscription&& rhs)
+		{
+			rhs.valid = false;
+		}
+
+		bool valid;
+	};
+
+	template<typename TInterface>
 	struct Wrapper
 	{
 		virtual TInterface* create() = 0;
@@ -54,12 +81,32 @@ public:
 		getInstance<TInterface>() = new ConcreteWrapper<TInterface, TImplementation>;
 	}
 
+	template<class TInterface, class TImplementation>
+	inline Subscription<TInterface> ScopedRegister()
+	{
+		if (getInstance<TInterface>())
+			delete getInstance<TInterface>();
+		getInstance<TInterface>() = new ConcreteWrapper<TInterface, TImplementation>;
+
+		return Subscription<TInterface>{};
+	}
+
 	template<class TInterface>
-	inline void Register(std::function<TInterface*()> i_create_proc)
+	inline void Register(std::function<TInterface* ()> i_create_proc)
 	{
 		if (getInstance<TInterface>())
 			delete getInstance<TInterface>();
 		getInstance<TInterface>() = new FuncWrapper<TInterface>(i_create_proc);
+	}
+
+	template<class TInterface>
+	inline Subscription<TInterface> ScopedRegister(std::function<TInterface* ()> i_create_proc)
+	{
+		if (getInstance<TInterface>())
+			delete getInstance<TInterface>();
+		getInstance<TInterface>() = new FuncWrapper<TInterface>(i_create_proc);
+
+		return Subscription<TInterface>{};
 	}
 
 	template<class TInterface>
