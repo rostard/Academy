@@ -1,7 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include "TaskDialog.h"
-
+#include "delegate.h"
 #include <QtWidgets>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -57,7 +57,6 @@ void MainWindow::updateTasks()
             return;
         }
         QStandardItemModel *model = new QStandardItemModel( nrow, 1, this );
-
         //fill model value
         for( int r=0; r<nrow; r++ )
         {
@@ -67,6 +66,10 @@ void MainWindow::updateTasks()
         }
 
         ui->listView->setModel(model);
+        MyDelegate *delegate = new MyDelegate();
+        connect(delegate, &MyDelegate::clicked, this, &MainWindow::askToDeleteTask);
+        ui->listView->setItemDelegate(delegate);
+
     }
 }
 
@@ -93,7 +96,7 @@ void MainWindow::SetTaskList(TaskList* list)
     mp_tasks = list;
 }
 
-void MainWindow::askToDeleteTask()
+void MainWindow::askToDeleteTask(int index)
 {
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, tr(""),
@@ -101,7 +104,6 @@ void MainWindow::askToDeleteTask()
                                     QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes)
     {
-        int index = ui->listView->selectionModel()->selectedIndexes().first().row();
         deletedTask(index);
     }
 }

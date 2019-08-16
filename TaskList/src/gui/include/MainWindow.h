@@ -34,7 +34,7 @@ public slots:
     void updateTasks();
     void askToLoadTasks();
 private slots:
-    void askToDeleteTask();
+    void askToDeleteTask(int index);
 private:
     Ui::MainWindow *ui;
     TaskList* mp_tasks;
