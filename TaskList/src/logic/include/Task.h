@@ -3,33 +3,51 @@
 
 #include <QString>
 #include <chrono>
+#include <QJsonObject>
 
 class LOGIC_EXPORT Task
 {
 public:
-
+    enum class State{
+        NEW,
+        ACTIVE,
+        PAUSED,
+        FINISHED
+    };
     using seconds = std::chrono::seconds;
-    inline std::string getName() const
-    {        return m_name;    }
+    inline QString getTitle() const
+    {        return m_title;    }
 
     inline int getPriority() const
     {        return m_priority;    }
 
+    inline State getState() const
+    {        return m_state;    }
+
     inline seconds getTimer() const
     {        return m_timeElapsed;    }
 
-    Task(std::string name,int priority) : m_name(name), m_priority(priority), m_timeElapsed(0){}
+    Task(QString name = " ",int priority = 2) : m_title(name), m_priority(priority), m_state(State::NEW), m_timeElapsed(0){}
     Task(Task&&) = default;
     Task(const Task&) = default;
     Task& operator=(Task&&) = default;
     Task& operator=(const Task&) = default;
-    void setTimer(seconds s)
-    {   m_timeElapsed = s;    }
-    inline void addTime(seconds secs)
-    {    m_timeElapsed += secs;       }
 
+    void setTitle(const QString& title);
+
+    void setPriority(int priority);
+
+    void setTimer(seconds s);
+
+    void setState(State state);
+
+    void addTime(seconds secs);
+
+    void write(QJsonObject& json) const;
+    void read(const QJsonObject &json);
 private:
-    std::string m_name;
+    QString m_title;
     int m_priority;
+    State m_state;
     seconds m_timeElapsed;
 };

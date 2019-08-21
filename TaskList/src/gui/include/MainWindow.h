@@ -1,42 +1,26 @@
 #pragma once
 
 #include "gui_export.h"
-#include <QMainWindow>
+#include <QObject>
+#include <QQmlApplicationEngine>
+#include <QAbstractItemModel>
+class QGuiApplication;
 
-#include "TaskList.h"
-
-namespace Ui {
-class MainWindow;
-}
-
-class GUI_EXPORT MainWindow : public QMainWindow
+class GUI_EXPORT MainWindow : public QObject
 {
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-
-    void AddDialog();
-
-    void SetTaskList(TaskList* list);
+\
+    void LoadEngine(const QUrl& url, QGuiApplication* app);
 
     ~MainWindow();
+
+    void setModel(QString name, QAbstractItemModel* model);
 signals:
-    void startCreatingTask();
-    void cancelCreatingTask();
-    void createdTask(Task task);
+    void qmlObjectCreated(QObject *object, const QUrl &url);
 
-    void startDeletingTask();
-    void cancelDeletingTask();
-    void deletedTask(int index);
-
-public slots:
-    void updateTasks();
-    void askToLoadTasks();
-private slots:
-    void askToDeleteTask(int index);
 private:
-    Ui::MainWindow *ui;
-    TaskList* mp_tasks;
-
+    QQmlApplicationEngine engine;
 };
